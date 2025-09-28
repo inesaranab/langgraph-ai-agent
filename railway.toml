@@ -1,9 +1,0 @@
-[build]
-buildCommand = "pip install -r backend/requirements.txt"
-
-[deploy]
-startCommand = "python railway_start.py"
-healthcheckPath = "/health"
-
-[env]
-PYTHONPATH = "./src:./backend"
