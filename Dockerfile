@@ -56,7 +56,9 @@ COPY src/ ./src/
 
 # Copy built frontend
 COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
-COPY --from=frontend-builder /app/frontend/public ./frontend/public
+
+# Copy public directory if it exists, otherwise create empty directory
+RUN mkdir -p ./frontend/public
 
 ENV PYTHONPATH=/app/src:/app/backend:/app
 
