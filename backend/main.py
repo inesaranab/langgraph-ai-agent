@@ -126,8 +126,8 @@ async def health_check():
 @app.post("/chat/stream")
 async def chat_stream(request: ChatRequest):
     """Streaming chat endpoint"""
-    if not agent:
-        raise HTTPException(status_code=500, detail="Agent not initialized")
+    # Get agent with provided API keys (same as regular chat endpoint)
+    current_agent = get_agent_with_keys(request.openai_api_key, request.tavily_api_key)
     
     # Generate session ID if not provided
     session_id = request.session_id or str(uuid.uuid4())
@@ -149,10 +149,7 @@ async def chat_stream(request: ChatRequest):
             # Send initial metadata
             yield f"data: {json.dumps({'type': 'start', 'session_id': session_id})}\n\n"
             
-            # Get agent with provided API keys
-            current_agent = get_agent_with_keys(request.openai_api_key, request.tavily_api_key)
-            
-            # Process query with agent
+            # Process query with agent (current_agent already initialized above)
             response_data = current_agent.process_query(request.message, session_id)
             
             # Stream the response in chunks

@@ -46,18 +46,12 @@ export class ChatService {
   private tavilyApiKey: string = ''
 
   constructor() {
-    // Configure for Vercel frontend + Railway backend deployment
-    const isDevelopment = process.env.NODE_ENV === 'development'
+    // Force Railway backend URL (debug mode)
+    this.baseUrl = 'https://langgraph-ai-agent-production-561e.up.railway.app'
     
-    if (isDevelopment) {
-      // Local development - separate frontend dev server
-      this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-    } else {
-      // Production: Vercel frontend calling Railway backend
-      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
-    }
-    
-    console.log('ChatService configured for:', this.baseUrl)
+    console.log('🚀 ChatService FORCE configured for:', this.baseUrl)
+    console.log('🔍 NODE_ENV:', process.env.NODE_ENV)
+    console.log('🔍 NEXT_PUBLIC_RAILWAY_URL:', process.env.NEXT_PUBLIC_RAILWAY_URL)
   }
 
   setApiKeys(openaiKey: string, tavilyKey: string) {
@@ -66,11 +60,35 @@ export class ChatService {
   }
 
   async healthCheck(): Promise<HealthResponse> {
-    const response = await fetch(`${this.baseUrl}/health`)
-    if (!response.ok) {
-      throw new Error('Health check failed')
+    try {
+      const url = `${this.baseUrl}/health`
+      console.log('🔍 Health check URL:', url)
+      console.log('🔍 Making fetch request...')
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      console.log('🔍 Response status:', response.status)
+      console.log('🔍 Response ok:', response.ok)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('🚨 Response error:', errorText)
+        throw new Error(`Health check failed: ${response.status} ${response.statusText} - ${errorText}`)
+      }
+      
+      const data = await response.json()
+      console.log('✅ Health check success:', data)
+      return data
+    } catch (error) {
+      console.error('🚨 Health check error:', error)
+      throw new Error(`Backend connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
-    return response.json()
   }
 
   async sendMessage(message: string, sessionId: string): Promise<ChatResponse> {
