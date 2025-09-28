@@ -134,13 +134,16 @@ async def clear_chat_history(session_id: str):
 
 # Frontend Static Files (if built frontend exists)
 frontend_dir = Path(__file__).parent.parent / "frontend"
-static_dir = frontend_dir / ".next" / "static"
-build_dir = frontend_dir / ".next"
+static_dir = frontend_dir / "static"
+public_dir = frontend_dir / "public"
 
-if frontend_dir.exists() and build_dir.exists():
-    # Only mount static directory if it exists
-    if static_dir.exists():
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+if frontend_dir.exists() and static_dir.exists():
+    # Mount the static files from Next.js export
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    
+    # Mount public files if they exist
+    if public_dir.exists():
+        app.mount("/public", StaticFiles(directory=str(public_dir)), name="public")
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
@@ -150,8 +153,18 @@ if frontend_dir.exists() and build_dir.exists():
         if full_path.startswith("api/") or full_path in ["health", "chat", "sessions", "docs", "redoc", "openapi.json"]:
             raise HTTPException(status_code=404, detail="API endpoint not found")
         
-        # Serve the main HTML file for frontend routes
-        # For Next.js, we'll serve a simple HTML that loads the app
+        # Serve static files directly
+        if full_path.startswith("_next/") or full_path.endswith(".js") or full_path.endswith(".css"):
+            static_file = static_dir / full_path
+            if static_file.exists():
+                return FileResponse(str(static_file))
+        
+        # For all other routes, serve the main HTML file
+        index_file = static_dir / "index.html"
+        if index_file.exists():
+            return FileResponse(str(index_file))
+        
+        # Fallback HTML if no static files
         html_content = """
         <!DOCTYPE html>
         <html>

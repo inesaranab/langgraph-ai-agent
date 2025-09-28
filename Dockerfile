@@ -54,11 +54,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY backend/ ./backend/
 COPY src/ ./src/
 
-# Copy built frontend
-COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
+# Copy built frontend static files
+COPY --from=frontend-builder /app/frontend/out ./frontend/static
+COPY --from=frontend-builder /app/frontend/public ./frontend/public
 
-# Copy public directory if it exists, otherwise create empty directory
-RUN mkdir -p ./frontend/public
+# Create directories if they don't exist
+RUN mkdir -p ./frontend/static ./frontend/public
 
 ENV PYTHONPATH=/app/src:/app/backend:/app
 
