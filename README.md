@@ -73,28 +73,40 @@ A modern, deployable web application built with **React + Next.js frontend** and
 
 
 
-## 🌐 Deploy to Vercel
+## ⚡ Deploy to Vercel (Serverless)
 
-### One-Click Deployment
+### 🚀 One-Click Vercel Deployment
 
-1. **Fork this repository**
-2. **Connect to Vercel:**
-   - Go to [vercel.com](https://vercel.com)
-   - Import your forked repository
-   - Vercel will automatically detect the Next.js frontend
+Deploy your LangGraph AI Agent as **serverless functions** on Vercel for instant global distribution!
 
-3. **Configure Environment Variables:**
-   Add these to your Vercel project settings:
-   ```
-   OPENAI_API_KEY=your_openai_api_key
-   TAVILY_API_KEY=your_tavily_api_key
-   LANGCHAIN_API_KEY=your_langsmith_key (optional)
-   ```
+1. **Fork this repository** and switch to `vercel-serverless` branch
+2. **Go to [vercel.com](https://vercel.com)** and sign up with GitHub
+3. **Click "New Project"** → Import from GitHub
+4. **Select your repository** (`langgraph-ai-agent`) 
+5. **Choose `vercel-serverless` branch**
+6. **Vercel auto-detects** Next.js and deploys instantly!
+7. **Get your Vercel URL** (like `https://your-app.vercel.app`)
 
-4. **Deploy:**
-   - Vercel automatically deploys both frontend and backend
-   - Backend available at: `https://your-app.vercel.app/api/*`
-   - Frontend available at: `https://your-app.vercel.app`
+### ⚡ Serverless Benefits:
+- ✅ **Instant global deployment** - Edge network distribution
+- ✅ **Zero server management** - Fully managed infrastructure
+- ✅ **Auto-scaling** - Handles any traffic load automatically  
+- ✅ **Pay per request** - Cost-efficient for moderate usage
+- ✅ **5-minute timeout** - Sufficient for most AI queries
+- ✅ **Free tier** - Generous limits for getting started
+
+### 🔑 User-Provided API Keys Security:
+This app is designed for **maximum security**:
+1. **Deploy to Vercel** (no server-side API keys needed)
+2. **Users provide their own API keys** via Settings modal
+3. **Keys sent directly with requests** - never stored on server
+4. **Complete privacy** - you don't pay for users' API usage
+
+### ⚠️ Serverless Limitations:
+- **5-minute timeout** - Complex queries may timeout on free tier
+- **Cold starts** - First request after idle period is slower
+- **Stateless** - No persistent memory between requests
+- **Limited for heavy AI workloads** - Better for moderate usage
 
 ### Manual Deployment
 
