@@ -17,8 +17,9 @@ export default function MarkdownRenderer({ content, className = "" }: MarkdownRe
         remarkPlugins={[remarkGfm]}
         components={{
           // Code blocks
-          code({ node, inline, className, children, ...props }) {
+          code({ node, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '')
+            const inline = !match
             return !inline && match ? (
               <SyntaxHighlighter
                 style={oneDark}

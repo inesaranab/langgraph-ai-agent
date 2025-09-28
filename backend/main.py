@@ -38,10 +38,15 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for React frontend
+# Configure CORS for Railway deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",  # Local development
+        "https://*.railway.app",  # Railway deployment
+        "https://*.vercel.app",   # If frontend stays on Vercel
+        "*"  # Allow all for Railway testing (tighten in production)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

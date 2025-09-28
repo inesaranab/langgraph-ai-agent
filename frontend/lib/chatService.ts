@@ -46,13 +46,18 @@ export class ChatService {
   private tavilyApiKey: string = ''
 
   constructor() {
-    // For Vercel deployment, use relative API routes in production
-    const isProduction = process.env.NODE_ENV === 'production'
-    const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+    // Configure for Railway backend deployment
+    const isDevelopment = process.env.NODE_ENV === 'development'
     
-    this.baseUrl = (isProduction || isVercel)
-      ? '' // Use relative URLs for Vercel deployment
-      : process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8002'
+    if (isDevelopment) {
+      // Local development - use local backend
+      this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    } else {
+      // Production - use Railway backend URL
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://your-app-name.railway.app'
+    }
+    
+    console.log('ChatService configured for:', this.baseUrl)
   }
 
   setApiKeys(openaiKey: string, tavilyKey: string) {

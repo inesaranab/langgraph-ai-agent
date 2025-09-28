@@ -1,6 +1,6 @@
-# LangGraph AI Agent - Full Stack Application
+# LangGraph AI Agent - Railway Deployment
 
-A modern, deployable web application built with **React + Next.js frontend** and **FastAPI backend**, featuring an intelligent AI agent powered by LangGraph for complex multi-step reasoning, web search, and academic research.
+A modern, full-stack AI application built with **React + Next.js frontend** and **FastAPI backend**, featuring an intelligent AI agent powered by LangGraph for complex multi-step reasoning, web search, and academic research. **Optimized for Railway deployment**.
 
 ## 🚀 Features
 
@@ -73,49 +73,61 @@ A modern, deployable web application built with **React + Next.js frontend** and
 
 
 
-## ⚡ Deploy to Vercel (Serverless)
+## 🚂 Deploy to Railway
 
-### 🚀 One-Click Vercel Deployment
+### 🚀 One-Click Railway Deployment
 
-Deploy your LangGraph AI Agent as **serverless functions** on Vercel for instant global distribution!
+Deploy your LangGraph AI Agent to **Railway** for reliable, traditional server hosting perfect for complex AI applications!
 
-1. **Fork this repository** and switch to `vercel-serverless` branch
-2. **Go to [vercel.com](https://vercel.com)** and sign up with GitHub
-3. **Click "New Project"** → Import from GitHub
-4. **Select your repository** (`langgraph-ai-agent`) 
-5. **Choose `vercel-serverless` branch**
-6. **Vercel auto-detects** Next.js and deploys instantly!
-7. **Get your Vercel URL** (like `https://your-app.vercel.app`)
+1. **Install Railway CLI:**
+   ```bash
+   npm install -g @railway/cli
+   railway login
+   ```
 
-### ⚡ Serverless Benefits:
-- ✅ **Instant global deployment** - Edge network distribution
-- ✅ **Zero server management** - Fully managed infrastructure
-- ✅ **Auto-scaling** - Handles any traffic load automatically  
-- ✅ **Pay per request** - Cost-efficient for moderate usage
-- ✅ **5-minute timeout** - Sufficient for most AI queries
-- ✅ **Free tier** - Generous limits for getting started
+2. **Deploy from this directory:**
+   ```bash
+   railway init my-langgraph-backend
+   railway up
+   ```
 
-### 🔑 User-Provided API Keys Security:
-This app is designed for **maximum security**:
-1. **Deploy to Vercel** (no server-side API keys needed)
-2. **Users provide their own API keys** via Settings modal
-3. **Keys sent directly with requests** - never stored on server
-4. **Complete privacy** - you don't pay for users' API usage
+3. **Railway automatically:**
+   - ✅ Detects Python + `requirements.txt`  
+   - ✅ Installs all LangGraph dependencies
+   - ✅ Starts your FastAPI server
+   - ✅ Provides HTTPS URL (like `https://myapp.railway.app`)
 
-### ⚠️ Serverless Limitations:
-- **5-minute timeout** - Complex queries may timeout on free tier
-- **Cold starts** - First request after idle period is slower
-- **Stateless** - No persistent memory between requests
-- **Limited for heavy AI workloads** - Better for moderate usage
+4. **Update frontend configuration:**
+   ```bash
+   # Update frontend/.env.local
+   NEXT_PUBLIC_RAILWAY_URL=https://your-app.railway.app
+   ```
 
-### Manual Deployment
+### ⚡ Railway Benefits:
+- ✅ **Perfect for AI/ML apps** - No serverless limitations
+- ✅ **Full Python support** - All LangGraph dependencies work
+- ✅ **No cold starts** - Always-warm server, instant responses
+- ✅ **Persistent connections** - Database connections stay alive
+- ✅ **Predictable pricing** - $5/month hobby, scales up
+- ✅ **Built-in monitoring** - Logs, metrics, and alerts
+- ✅ **Auto-scaling** - Handles traffic spikes gracefully
 
+### 🔑 Railway Environment Variables:
+Set these in Railway dashboard (optional - users can provide their own):
 ```bash
-# Install Vercel CLI
-npm i -g vercel
+OPENAI_API_KEY=your_openai_key        # Optional fallback
+TAVILY_API_KEY=your_tavily_key        # Optional fallback
+PYTHONPATH=./src:./backend            # Required for imports
+```
 
-# Deploy
-vercel --prod
+### 📁 Railway Configuration Files:
+- `railway.toml` - Railway deployment settings
+- `nixpacks.toml` - Build and runtime configuration  
+- `railway_start.py` - Optimized startup script
+
+### 🔗 Architecture:
+```
+Frontend (Vercel/Local) → Railway Backend → LangGraph Agent → OpenAI/Tavily APIs
 ```
 
 ## 🔧 API Endpoints
