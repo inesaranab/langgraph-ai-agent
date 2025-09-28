@@ -6,7 +6,7 @@ Serves both API and frontend from single service
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -133,10 +133,14 @@ async def clear_chat_history(session_id: str):
     return {"message": "Chat history cleared", "session_id": session_id}
 
 # Frontend Static Files (if built frontend exists)
-frontend_dir = Path(__file__).parent.parent / "frontend" / ".next" / "standalone"
-if frontend_dir.exists():
-    # Mount the built frontend
-    app.mount("/static", StaticFiles(directory=str(frontend_dir / ".next" / "static")), name="static")
+frontend_dir = Path(__file__).parent.parent / "frontend"
+static_dir = frontend_dir / ".next" / "static"
+build_dir = frontend_dir / ".next"
+
+if frontend_dir.exists() and build_dir.exists():
+    # Only mount static directory if it exists
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
@@ -146,13 +150,32 @@ if frontend_dir.exists():
         if full_path.startswith("api/") or full_path in ["health", "chat", "sessions", "docs", "redoc", "openapi.json"]:
             raise HTTPException(status_code=404, detail="API endpoint not found")
         
-        # Serve index.html for all frontend routes
-        index_file = frontend_dir / "server.js"  # Next.js standalone
-        if index_file.exists():
-            return FileResponse(str(index_file))
-        
-        # Fallback
-        raise HTTPException(status_code=404, detail="Frontend not built")
+        # Serve the main HTML file for frontend routes
+        # For Next.js, we'll serve a simple HTML that loads the app
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>LangGraph AI Agent</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+        </head>
+        <body>
+            <div id="__next">
+                <div style="padding: 20px; text-align: center; font-family: Arial;">
+                    <h1>LangGraph AI Agent</h1>
+                    <p>Frontend is building... Please use the API endpoints:</p>
+                    <ul style="list-style: none;">
+                        <li><a href="/health">/health</a> - Health check</li>
+                        <li><a href="/docs">/docs</a> - API Documentation</li>
+                        <li><a href="/api/chat">/api/chat</a> - Chat API</li>
+                    </ul>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
 
 # Startup message
 @app.on_event("startup")
