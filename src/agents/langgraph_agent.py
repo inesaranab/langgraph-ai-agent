@@ -6,6 +6,7 @@ Core agent logic with tool integration and state management
 import time
 from typing import Dict, List, Any, Optional, TypedDict
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.graph import StateGraph, END
 import uuid
@@ -38,11 +39,18 @@ class LangGraphAgent:
         self.openai_api_key = openai_api_key or config.openai_api_key
         self.tavily_api_key = tavily_api_key or config.tavily_api_key
         
+        # Validate required API keys
+        if not self.openai_api_key:
+            raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable or pass openai_api_key parameter.")
+        
+        if not self.tavily_api_key:
+            raise ValueError("Tavily API key is required. Set TAVILY_API_KEY environment variable or pass tavily_api_key parameter.")
+        
         self.llm = ChatOpenAI(
             model="gpt-4o-mini",
             temperature=0.1,
             streaming=True,
-            api_key=self.openai_api_key
+            api_key=SecretStr(self.openai_api_key)
         )
         
         # Initialize tools with dynamic API keys
