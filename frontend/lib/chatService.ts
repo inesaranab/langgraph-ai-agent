@@ -46,15 +46,15 @@ export class ChatService {
   private tavilyApiKey: string = ''
 
   constructor() {
-    // Configure for Railway backend deployment
+    // Configure for Vercel frontend + Railway backend deployment
     const isDevelopment = process.env.NODE_ENV === 'development'
     
     if (isDevelopment) {
       // Local development - separate frontend dev server
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     } else {
-      // Production: if running behind same domain (full-stack), use relative
-      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || ''
+      // Production: Vercel frontend calling Railway backend
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
     }
     
     console.log('ChatService configured for:', this.baseUrl)
