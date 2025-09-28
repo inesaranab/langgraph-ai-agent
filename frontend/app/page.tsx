@@ -31,11 +31,9 @@ export default function Home() {
   const checkConnection = async () => {
     try {
       const health = await chatService.current.healthCheck()
-      // Connection is successful if health check passes, regardless of agent_ready status
+      // Connection is successful if health check passes
       setIsConnected(health.status === 'healthy')
-      console.log('🔗 Connection status updated:', health.status === 'healthy')
     } catch (error) {
-      console.error('🚨 Connection check failed:', error)
       setIsConnected(false)
     }
   }

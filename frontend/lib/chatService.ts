@@ -46,12 +46,16 @@ export class ChatService {
   private tavilyApiKey: string = ''
 
   constructor() {
-    // Force Railway backend URL (debug mode)
-    this.baseUrl = 'https://langgraph-ai-agent-production-561e.up.railway.app'
+    // Configure for production deployment
+    const isDevelopment = process.env.NODE_ENV === 'development'
     
-    console.log('🚀 ChatService FORCE configured for:', this.baseUrl)
-    console.log('🔍 NODE_ENV:', process.env.NODE_ENV)
-    console.log('🔍 NEXT_PUBLIC_RAILWAY_URL:', process.env.NEXT_PUBLIC_RAILWAY_URL)
+    if (isDevelopment) {
+      // Local development
+      this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+    } else {
+      // Production: Vercel frontend + Railway backend
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
+    }
   }
 
   setApiKeys(openaiKey: string, tavilyKey: string) {
@@ -61,11 +65,7 @@ export class ChatService {
 
   async healthCheck(): Promise<HealthResponse> {
     try {
-      const url = `${this.baseUrl}/health`
-      console.log('🔍 Health check URL:', url)
-      console.log('🔍 Making fetch request...')
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         mode: 'cors',
         headers: {
@@ -73,20 +73,12 @@ export class ChatService {
         },
       })
       
-      console.log('🔍 Response status:', response.status)
-      console.log('🔍 Response ok:', response.ok)
-      
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('🚨 Response error:', errorText)
-        throw new Error(`Health check failed: ${response.status} ${response.statusText} - ${errorText}`)
+        throw new Error(`Health check failed: ${response.status} ${response.statusText}`)
       }
       
-      const data = await response.json()
-      console.log('✅ Health check success:', data)
-      return data
+      return response.json()
     } catch (error) {
-      console.error('🚨 Health check error:', error)
       throw new Error(`Backend connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
