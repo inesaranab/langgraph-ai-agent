@@ -50,11 +50,11 @@ export class ChatService {
     const isDevelopment = process.env.NODE_ENV === 'development'
     
     if (isDevelopment) {
-      // Local development - use local backend
+      // Local development - separate frontend dev server
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     } else {
-      // Production - use Railway backend URL
-      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
+      // Production: if running behind same domain (full-stack), use relative
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || ''
     }
     
     console.log('ChatService configured for:', this.baseUrl)

@@ -1,3 +1,179 @@
+"""Unified Full-Stack FastAPI entrypoint
+Serves:
+ - LangGraph agent API (full functionality)
+ - Static exported Next.js frontend (if present)
+
+Deployment modes:
+ - LOCAL_DEV: run frontend separately (npm dev) and this API only
+ - FULLSTACK: single container on Railway serving static export
+"""
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from typing import Optional, Dict, Any, List
+from datetime import datetime
+import asyncio
+import uuid
+import os
+import json
+from pathlib import Path
+from dotenv import load_dotenv
+
+# ---- LangGraph imports ----
+import sys
+parent_dir = os.path.dirname(os.path.dirname(__file__))
+src_dir = os.path.join(parent_dir, 'src')
+sys.path.insert(0, parent_dir)
+sys.path.insert(0, src_dir)
+from src.agents.langgraph_agent import LangGraphAgent
+from src.utils.config import AppConfig
+
+load_dotenv()
+
+MODE = os.getenv("APP_MODE", "FULLSTACK").upper()
+
+app = FastAPI(title="LangGraph AI Agent", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+    timestamp: Optional[datetime] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    conversation_history: Optional[List[ChatMessage]] = []
+    openai_api_key: Optional[str] = None
+    tavily_api_key: Optional[str] = None
+
+class ChatResponse(BaseModel):
+    response: str
+    session_id: str
+    metadata: Dict[str, Any]
+    timestamp: datetime
+
+class HealthResponse(BaseModel):
+    status: str
+    timestamp: datetime
+    agent_ready: bool
+    api_keys_configured: bool
+    mode: str
+
+sessions: Dict[str, List[ChatMessage]] = {}
+
+config = AppConfig()
+agent: Optional[LangGraphAgent] = None
+
+def get_agent(openai_key: Optional[str], tavily_key: Optional[str]):
+    if openai_key and tavily_key:
+        return LangGraphAgent(config, openai_key, tavily_key)
+    if agent:
+        return agent
+    raise HTTPException(status_code=400, detail="Agent not initialized and no API keys provided")
+
+@app.on_event("startup")
+async def startup():
+    global agent
+    env_oai = os.getenv("OPENAI_API_KEY")
+    env_tav = os.getenv("TAVILY_API_KEY")
+    if env_oai and env_tav:
+        try:
+            agent = LangGraphAgent(config, env_oai, env_tav)
+            print("✅ LangGraph agent initialized with environment keys")
+        except Exception as e:
+            print(f"⚠️ Failed to init agent: {e}")
+    else:
+        print("ℹ️ No environment API keys; expecting runtime provided keys.")
+    print(f"MODE={MODE}")
+
+@app.get("/health", response_model=HealthResponse)
+async def health():
+    return HealthResponse(
+        status="healthy",
+        timestamp=datetime.now(),
+        agent_ready=agent is not None,
+        api_keys_configured=bool(os.getenv("OPENAI_API_KEY") and os.getenv("TAVILY_API_KEY")),
+        mode=MODE
+    )
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(req: ChatRequest):
+    current_agent = get_agent(req.openai_api_key, req.tavily_api_key)
+    session_id = req.session_id or str(uuid.uuid4())
+    if session_id not in sessions:
+        sessions[session_id] = []
+    # Add user message
+    sessions[session_id].append(ChatMessage(role="user", content=req.message, timestamp=datetime.now()))
+    data = current_agent.process_query(req.message, session_id)
+    response_text = data.get("response", "No response generated")
+    metadata = data.get("metadata", {})
+    chat_resp = ChatResponse(response=response_text, session_id=session_id, metadata=metadata, timestamp=datetime.now())
+    sessions[session_id].append(ChatMessage(role="assistant", content=response_text, timestamp=chat_resp.timestamp, metadata=metadata))
+    return chat_resp
+
+@app.post("/chat/stream")
+async def chat_stream(req: ChatRequest):
+    current_agent = get_agent(req.openai_api_key, req.tavily_api_key)
+    session_id = req.session_id or str(uuid.uuid4())
+    if session_id not in sessions:
+        sessions[session_id] = []
+    sessions[session_id].append(ChatMessage(role="user", content=req.message, timestamp=datetime.now()))
+
+    async def generate():
+        try:
+            yield f"data: {json.dumps({'type': 'start', 'session_id': session_id})}\n\n"
+            data = current_agent.process_query(req.message, session_id)
+            full = data.get('response', '')
+            metadata = data.get('metadata', {})
+            words = full.split(' ')
+            current = ''
+            for w in words:
+                current += w + ' '
+                yield f"data: {json.dumps({'type':'chunk','content':w+' ','full_content':current.strip()})}\n\n"
+                await asyncio.sleep(0.02)
+            yield f"data: {json.dumps({'type':'done','metadata':metadata})}\n\n"
+            sessions[session_id].append(ChatMessage(role="assistant", content=full, timestamp=datetime.now(), metadata=metadata))
+        except Exception as e:
+            yield f"data: {json.dumps({'type':'error','error':str(e)})}\n\n"
+
+    return StreamingResponse(generate(), media_type="text/event-stream")
+
+@app.get("/chat/{session_id}/history", response_model=List[ChatMessage])
+async def history(session_id: str):
+    return sessions.get(session_id, [])
+
+@app.delete("/chat/{session_id}")
+async def clear(session_id: str):
+    if session_id in sessions:
+        del sessions[session_id]
+    return {"message": "cleared", "session_id": session_id}
+
+# ---- Static Frontend (only in FULLSTACK mode) ----
+if MODE == "FULLSTACK":
+    export_dir = Path(__file__).parent.parent / "frontend" / "dist"
+    alt_dir = Path(__file__).parent.parent / "frontend" / "static"  # fallback name
+    chosen = export_dir if export_dir.exists() else alt_dir
+    if chosen.exists():
+        app.mount("/", StaticFiles(directory=str(chosen), html=True), name="frontend")
+        print(f"🗂  Serving static frontend from: {chosen}")
+    else:
+        print("⚠️ No static frontend directory found; API-only mode.")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
 """
 Simple FastAPI Backend for LangGraph AI Agent
 Streamlined for Railway deployment

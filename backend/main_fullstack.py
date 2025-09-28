@@ -132,18 +132,14 @@ async def clear_chat_history(session_id: str):
         del sessions[session_id]
     return {"message": "Chat history cleared", "session_id": session_id}
 
-# Frontend Static Files (if built frontend exists)
-frontend_dir = Path(__file__).parent.parent / "frontend"
-static_dir = frontend_dir / "static"
-public_dir = frontend_dir / "public"
+# Frontend Static Files (serve Next.js exported static files)
+frontend_dir = Path(__file__).parent.parent / "frontend" / "static"
 
-if frontend_dir.exists() and static_dir.exists():
-    # Mount the static files from Next.js export
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-    
-    # Mount public files if they exist
-    if public_dir.exists():
-        app.mount("/public", StaticFiles(directory=str(public_dir)), name="public")
+if frontend_dir.exists():
+    # Mount Next.js static assets
+    next_static = frontend_dir / "_next"
+    if next_static.exists():
+        app.mount("/_next", StaticFiles(directory=str(next_static)), name="next_static")
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
@@ -153,18 +149,18 @@ if frontend_dir.exists() and static_dir.exists():
         if full_path.startswith("api/") or full_path in ["health", "chat", "sessions", "docs", "redoc", "openapi.json"]:
             raise HTTPException(status_code=404, detail="API endpoint not found")
         
-        # Serve static files directly
-        if full_path.startswith("_next/") or full_path.endswith(".js") or full_path.endswith(".css"):
-            static_file = static_dir / full_path
-            if static_file.exists():
+        # Check if it's a specific file in the static directory
+        if full_path:
+            static_file = frontend_dir / full_path
+            if static_file.exists() and static_file.is_file():
                 return FileResponse(str(static_file))
         
-        # For all other routes, serve the main HTML file
-        index_file = static_dir / "index.html"
+        # For root and all other routes, serve index.html
+        index_file = frontend_dir / "index.html"
         if index_file.exists():
             return FileResponse(str(index_file))
         
-        # Fallback HTML if no static files
+        # Fallback HTML if no static files found
         html_content = """
         <!DOCTYPE html>
         <html>
@@ -177,7 +173,7 @@ if frontend_dir.exists() and static_dir.exists():
             <div id="__next">
                 <div style="padding: 20px; text-align: center; font-family: Arial;">
                     <h1>LangGraph AI Agent</h1>
-                    <p>Frontend is building... Please use the API endpoints:</p>
+                    <p>Frontend static files not found. Please use the API endpoints:</p>
                     <ul style="list-style: none;">
                         <li><a href="/health">/health</a> - Health check</li>
                         <li><a href="/docs">/docs</a> - API Documentation</li>
