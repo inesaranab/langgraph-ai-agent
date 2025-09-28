@@ -54,7 +54,7 @@ export class ChatService {
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     } else {
       // Production - use Railway backend URL
-      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://your-app-name.railway.app'
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
     }
     
     console.log('ChatService configured for:', this.baseUrl)
