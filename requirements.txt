@@ -5,12 +5,13 @@ python-multipart==0.0.6
 pydantic==2.5.0
 
 # CORS
-fastapi-cors==0.0.6
+python-cors==1.7.0
 
-# LangChain & LangGraph
-langgraph==0.0.65
-langchain==0.1.0
-langchain-openai==0.0.2
+# LangChain & LangGraph - Compatible versions
+langchain-core==0.2.43
+langgraph==0.2.34
+langchain==0.2.16
+langchain-openai==0.1.25
 
 # Tools
 tavily-python==0.3.3
@@ -18,6 +19,3 @@ arxiv==2.1.0
 
 # Environment
 python-dotenv==1.0.0
-
-# Optional: Development
-pytest==7.4.3
