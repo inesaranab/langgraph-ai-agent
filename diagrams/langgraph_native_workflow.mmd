@@ -1,0 +1,22 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	analyzer(analyzer)
+	tool_caller(tool_caller)
+	responder(responder)
+	helpfulness_checker(helpfulness_checker)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> analyzer;
+	analyzer -. &nbsp;direct_response&nbsp; .-> responder;
+	analyzer -. &nbsp;use_tools&nbsp; .-> tool_caller;
+	helpfulness_checker -. &nbsp;finish&nbsp; .-> __end__;
+	helpfulness_checker -. &nbsp;regenerate&nbsp; .-> responder;
+	responder --> helpfulness_checker;
+	tool_caller --> responder;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

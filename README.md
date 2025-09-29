@@ -38,16 +38,19 @@ This application combines the power of LangGraph's workflow orchestration with m
 
 ## Workflow
 
-The LangGraph AI Agent follows a sophisticated 5-node workflow with intelligent routing and quality control:
+The LangGraph AI Agent follows a sophisticated workflow with intelligent routing and quality control:
 
-![LangGraph Workflow](diagrams/complete_workflow.png)
+![LangGraph Workflow](diagrams/langgraph_native_workflow.png)
+
+*Generated using LangGraph's native `draw_mermaid()` method - shows the actual compiled graph structure*
 
 **Flow Overview:**
-1. **Query Analysis** - Analyzes input to determine required tools (Web/ArXiv/YouTube)
-2. **Tool Execution** - Runs appropriate searches based on query type
-3. **Response Generation** - Creates comprehensive answer with source citations  
-4. **Quality Assessment** - Evaluates response helpfulness and regenerates if needed
-5. **Final Output** - Returns polished response with metadata
+1. **Query Analysis** (`analyzer`) - Uses GPT-o3 to intelligently determine required tools (Web/ArXiv/YouTube)
+2. **Conditional Routing** - Smart decision between direct response or tool execution
+3. **Tool Execution** (`tool_caller`) - Runs appropriate searches based on analysis
+4. **Response Generation** (`responder`) - Creates comprehensive answer with source citations  
+5. **Quality Control** (`helpfulness_checker`) - Evaluates and regenerates if needed
+6. **Self-Improvement Loop** - Can regenerate responses until quality threshold met
 
 ## Quick Start
 
