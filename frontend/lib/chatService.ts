@@ -135,7 +135,16 @@ export class ChatService {
     })
 
     if (!response.ok) {
-      throw new Error('Failed to start streaming')
+      let errorMessage = 'Failed to start streaming'
+      try {
+        const errorData = await response.json()
+        if (errorData.detail) {
+          errorMessage = errorData.detail
+        }
+      } catch (e) {
+        // If we can't parse the error, use the default message
+      }
+      throw new Error(errorMessage)
     }
 
     const reader = response.body?.getReader()
