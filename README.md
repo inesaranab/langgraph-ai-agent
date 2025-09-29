@@ -162,6 +162,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
+- The **AI Makerspace** community ❤️
 - **LangGraph** for the agent framework
 - **OpenAI** for GPT models
 - **Tavily** for web search capabilities

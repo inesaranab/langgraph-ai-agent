@@ -2,9 +2,13 @@ export interface Source {
   title: string
   url: string
   snippet: string
-  type: 'web' | 'arxiv'
+  type: 'web' | 'arxiv' | 'youtube'
   published_date?: string
   score: number
+  // YouTube-specific fields
+  duration?: string
+  channel?: string
+  thumbnail?: string
 }
 
 export interface ChatMessage {

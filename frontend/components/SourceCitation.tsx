@@ -1,15 +1,19 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ExternalLink, Calendar, Globe, FileText, X } from 'lucide-react'
+import { ExternalLink, Calendar, Globe, FileText, X, Play } from 'lucide-react'
 
 interface Source {
   title: string
   url: string
   snippet: string
-  type: 'web' | 'arxiv'
+  type: 'web' | 'arxiv' | 'youtube'
   published_date?: string
   score: number
+  // YouTube-specific fields
+  duration?: string
+  channel?: string
+  thumbnail?: string
 }
 
 interface SourceCitationProps {
@@ -43,6 +47,8 @@ function SourceModal({ source, isOpen, onClose }: SourceModalProps) {
           <div className="flex items-center gap-2 flex-1 mr-4">
             {source.type === 'arxiv' ? (
               <FileText className="w-5 h-5 text-green-500 flex-shrink-0" />
+            ) : source.type === 'youtube' ? (
+              <Play className="w-5 h-5 text-red-500 flex-shrink-0" />
             ) : (
               <Globe className="w-5 h-5 text-blue-500 flex-shrink-0" />
             )}
@@ -62,9 +68,12 @@ function SourceModal({ source, isOpen, onClose }: SourceModalProps) {
             <span className={`px-2 py-1 rounded text-xs font-medium ${
               source.type === 'arxiv' 
                 ? 'bg-green-900/30 text-green-400' 
+                : source.type === 'youtube'
+                ? 'bg-red-900/30 text-red-400'
                 : 'bg-blue-900/30 text-blue-400'
             }`}>
-              {source.type === 'arxiv' ? 'Academic Paper' : 'Web Source'}
+              {source.type === 'arxiv' ? 'Academic Paper' : 
+               source.type === 'youtube' ? 'YouTube Video' : 'Web Source'}
             </span>
           </div>
           {source.published_date && (
@@ -117,16 +126,20 @@ function SourceBadge({ source, onClick }: { source: Source; onClick: () => void 
       className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors hover:scale-105 ${
         source.type === 'arxiv'
           ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
+          : source.type === 'youtube'
+          ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50'
           : 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/50'
       }`}
       title={source.title}
     >
       {source.type === 'arxiv' ? (
         <FileText className="w-3 h-3" />
+      ) : source.type === 'youtube' ? (
+        <Play className="w-3 h-3" />
       ) : (
         <Globe className="w-3 h-3" />
       )}
-      <span>{source.type === 'arxiv' ? 'Paper' : 'Web'}</span>
+      <span>{source.type === 'arxiv' ? 'Paper' : source.type === 'youtube' ? 'Video' : 'Web'}</span>
     </button>
   )
 }

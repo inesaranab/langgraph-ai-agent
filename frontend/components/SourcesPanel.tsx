@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { X, ExternalLink, Calendar, Globe, FileText, Search, Filter, Clock, Star } from 'lucide-react'
+import { X, ExternalLink, Calendar, Globe, FileText, Search, Filter, Clock, Star, Play } from 'lucide-react'
 import { Source } from '../lib/chatService'
 
 interface SourcesPanelProps {
@@ -20,7 +20,7 @@ interface SourceWithMetadata extends Source {
 export default function SourcesPanel({ isOpen, onClose, allSources, className = '' }: SourcesPanelProps) {
   const [filteredSources, setFilteredSources] = useState<SourceWithMetadata[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [typeFilter, setTypeFilter] = useState<'all' | 'web' | 'arxiv'>('all')
+  const [typeFilter, setTypeFilter] = useState<'all' | 'web' | 'arxiv' | 'youtube'>('all')
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'relevance'>('newest')
 
   // Process and filter sources
@@ -69,17 +69,26 @@ export default function SourcesPanel({ isOpen, onClose, allSources, className = 
   }
 
   const getTypeColor = (type: string) => {
-    return type === 'arxiv' ? 'text-green-400' : 'text-blue-400'
+    switch (type) {
+      case 'arxiv': return 'text-green-400'
+      case 'youtube': return 'text-red-400'
+      default: return 'text-blue-400' // web
+    }
   }
 
   const getTypeBg = (type: string) => {
-    return type === 'arxiv' ? 'bg-green-900/30' : 'bg-blue-900/30'
+    switch (type) {
+      case 'arxiv': return 'bg-green-900/30'
+      case 'youtube': return 'bg-red-900/30'
+      default: return 'bg-blue-900/30' // web
+    }
   }
 
   if (!isOpen) return null
 
   const webCount = allSources.filter(s => s.type === 'web').length
   const arxivCount = allSources.filter(s => s.type === 'arxiv').length
+  const youtubeCount = allSources.filter(s => s.type === 'youtube').length
 
   return (
     <div 
@@ -94,7 +103,7 @@ export default function SourcesPanel({ isOpen, onClose, allSources, className = 
             <div>
               <h2 className="text-xl font-semibold text-white">Research Sources</h2>
               <p className="text-sm text-gray-400">
-                {allSources.length} sources • {webCount} web • {arxivCount} academic
+                {allSources.length} sources • {webCount} web • {arxivCount} academic • {youtubeCount} videos
               </p>
             </div>
           </div>
@@ -134,6 +143,7 @@ export default function SourcesPanel({ isOpen, onClose, allSources, className = 
                 <option value="all">All Sources</option>
                 <option value="web">Web Sources</option>
                 <option value="arxiv">Academic Papers</option>
+                <option value="youtube">YouTube Videos</option>
               </select>
             </div>
 
@@ -179,6 +189,8 @@ export default function SourcesPanel({ isOpen, onClose, allSources, className = 
                       <div className={`p-2 rounded-lg ${getTypeBg(source.type)}`}>
                         {source.type === 'arxiv' ? (
                           <FileText className={`w-4 h-4 ${getTypeColor(source.type)}`} />
+                        ) : source.type === 'youtube' ? (
+                          <Play className={`w-4 h-4 ${getTypeColor(source.type)}`} />
                         ) : (
                           <Globe className={`w-4 h-4 ${getTypeColor(source.type)}`} />
                         )}
@@ -190,12 +202,24 @@ export default function SourcesPanel({ isOpen, onClose, allSources, className = 
                         </h3>
                         <div className="flex items-center gap-4 text-xs text-gray-400 mb-2">
                           <span className={`px-2 py-1 rounded ${getTypeBg(source.type)} ${getTypeColor(source.type)}`}>
-                            {source.type === 'arxiv' ? 'Academic Paper' : 'Web Source'}
+                            {source.type === 'arxiv' ? 'Academic Paper' : 
+                             source.type === 'youtube' ? 'YouTube Video' : 'Web Source'}
                           </span>
                           {source.published_date && (
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               <span>{new Date(source.published_date).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                          {source.type === 'youtube' && source.duration && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>{source.duration}</span>
+                            </div>
+                          )}
+                          {source.type === 'youtube' && source.channel && (
+                            <div className="flex items-center gap-1">
+                              <span>by {source.channel}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-1">

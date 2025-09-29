@@ -31,7 +31,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             
             {/* Sources Citation */}
             {message.metadata?.sources && message.metadata.sources.length > 0 && (
-              <SourceCitation sources={message.metadata.sources} />
+              <SourceCitation sources={message.metadata.sources as any} />
             )}
           </>
         )}
