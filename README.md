@@ -36,6 +36,19 @@ This application combines the power of LangGraph's workflow orchestration with m
 - Video Search (YouTube API)
 - Helpfulness Evaluation (OpenAI GPT)
 
+## Workflow
+
+The LangGraph AI Agent follows a sophisticated 5-node workflow with intelligent routing and quality control:
+
+![LangGraph Workflow](diagrams/complete_workflow.png)
+
+**Flow Overview:**
+1. **Query Analysis** - Analyzes input to determine required tools (Web/ArXiv/YouTube)
+2. **Tool Execution** - Runs appropriate searches based on query type
+3. **Response Generation** - Creates comprehensive answer with source citations  
+4. **Quality Assessment** - Evaluates response helpfulness and regenerates if needed
+5. **Final Output** - Returns polished response with metadata
+
 ## Quick Start
 
 ### Prerequisites

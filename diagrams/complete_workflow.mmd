@@ -1,0 +1,26 @@
+graph TD
+    START([🚀 START]) --> analyzer[📊 Query Analyzer]
+    
+    analyzer --> decision1{🤔 Should Use Tools?}
+    
+    decision1 -->|use_tools| tool_caller[🔧 Multi-Tool Caller<br/>Web • ArXiv • YouTube]
+    decision1 -->|direct_response| responder[🤖 Response Generator]
+    
+    tool_caller --> responder
+    responder --> helpfulness_checker[⭐ Quality Checker]
+    
+    helpfulness_checker --> decision2{📈 Quality Check}
+    
+    decision2 -->|regenerate| responder
+    decision2 -->|finish| END([✅ END])
+    
+    %% Styling
+    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:3px,color:#000
+    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef tools fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000
+    
+    class START,END startEnd
+    class analyzer,responder,helpfulness_checker process
+    class decision1,decision2 decision
+    class tool_caller tools
