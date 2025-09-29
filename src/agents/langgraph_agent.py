@@ -51,7 +51,7 @@ class LangGraphAgent:
             raise ValueError("Tavily API key is required. Set TAVILY_API_KEY environment variable or pass tavily_api_key parameter.")
         
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+            model="gpt-o3",
             temperature=0.1,
             streaming=True,
             api_key=SecretStr(self.openai_api_key)
