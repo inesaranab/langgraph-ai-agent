@@ -8,7 +8,7 @@ import json
 import time
 
 # Production URLs
-FRONTEND_URL = "https://myfirstadvanced-46vjx23bi-inesaranabs-projects.vercel.app"
+FRONTEND_URL = "https://myfirstadvanced-jlxhx552d-inesaranabs-projects.vercel.app"
 BACKEND_URL = "https://langgraph-ai-agent-production-561e.up.railway.app"
 
 def test_backend_health():
