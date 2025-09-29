@@ -7,7 +7,7 @@ import time
 import json
 from typing import Dict, List, Any, Optional, TypedDict, Annotated
 from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
+
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -51,7 +51,7 @@ class LangGraphAgent:
             model="gpt-4o-mini",
             temperature=0.1,
             streaming=True,
-            api_key=SecretStr(self.openai_api_key)
+            api_key=self.openai_api_key
         )
         
         # Initialize tools with dynamic API keys
