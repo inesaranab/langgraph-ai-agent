@@ -58,7 +58,7 @@ export class ChatService {
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     } else {
       // Production: Vercel frontend + Railway backend
-      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
+      this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-7799.up.railway.app'
     }
   }
 

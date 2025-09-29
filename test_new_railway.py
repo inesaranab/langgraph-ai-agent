@@ -22,7 +22,7 @@ print(f"Has OpenAI key: {bool(data['openai_api_key'])}")
 print(f"Has Tavily key: {bool(data['tavily_api_key'])}")
 
 try:
-    response = requests.post(url, json=data, timeout=30)
+    response = requests.post(url, json=data, timeout=60)
     print(f"\n📊 Response Status: {response.status_code}")
     print(f"Response Headers: {dict(response.headers)}")
     
