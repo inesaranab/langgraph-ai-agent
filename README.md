@@ -1,121 +1,238 @@
-# LangGraph AI Agent# LangGraph AI Agent 🤖
+# LangGraph AI Agent# LangGraph AI Agent# LangGraph AI Agent 🤖
 
 
 
-A sophisticated AI agent powered by LangGraph that provides comprehensive responses by intelligently searching across multiple knowledge sources including web search, academic papers, and educational videos.A production-ready AI agent application built with **LangGraph**, featuring a modern React frontend and FastAPI backend with full tool integration.
+> An intelligent multi-tool AI agent built with LangGraph that searches web, academic papers, and educational videos to provide comprehensive, cited responses.
 
 
 
-## 🚀 Features## ✨ Features
+## OverviewA sophisticated AI agent powered by LangGraph that provides comprehensive responses by intelligently searching across multiple knowledge sources including web search, academic papers, and educational videos.A production-ready AI agent application built with **LangGraph**, featuring a modern React frontend and FastAPI backend with full tool integration.
 
 
 
-- **🔍 Multi-Source Intelligence**: Combines web search, academic research, and educational content- **🧠 Advanced LangGraph Agent**: Intelligent workflow with conditional tool routing
-
-- **💬 Real-Time Chat Interface**: Modern React-based UI with streaming responses  - **🌐 Web Search Integration**: Real-time information via Tavily API
-
-- **📚 Source Citations**: Automatic tracking and citation of all information sources- **📚 Academic Search**: ArXiv paper search and analysis
-
-- **🎯 Smart Tool Selection**: AI-driven selection of optimal search tools per query- **📊 Quality Control**: Built-in helpfulness evaluation
-
-- **⚡ High Performance**: FastAPI backend with optimized response streaming- **💬 Modern Chat UI**: React + Next.js with streaming responses
-
-- **🎨 Modern Design**: Clean, responsive interface with dark theme- **🎨 Beautiful Design**: Black & gold themed interface
-
-- **📱 Responsive**: Works on desktop and mobile
-
-## 🛠 Tech Stack- **🔒 Secure**: User-provided API keys (no server-side key storage)
+This application combines the power of LangGraph's workflow orchestration with multiple search tools to create an AI agent that can intelligently gather information from diverse sources and provide well-researched, cited responses.
 
 
 
-### Backend## 🚀 Live Demo
+**Live Application**: https://myfirstadvanced-r0yha9x6b-inesaranabs-projects.vercel.app## 🚀 Features## ✨ Features
 
-- **LangGraph** - Advanced AI agent workflow orchestration
 
-- **LangChain** - Tool integration and prompt engineering- **Frontend**: https://myfirstadvanced-ib93xxsdh-inesaranabs-projects.vercel.app
 
-- **FastAPI** - High-performance async API framework- **Backend API**: https://langgraph-ai-agent-production-561e.up.railway.app
+## Key Features
 
-- **OpenAI GPT-4** - Advanced language model- **API Docs**: https://langgraph-ai-agent-production-561e.up.railway.app/docs
 
-- **Tavily API** - Real-time web search
 
-- **ArXiv API** - Academic paper search## 🏗️ Architecture
+- **Multi-Source Search**: Intelligently searches web (Tavily), academic papers (ArXiv), and educational videos (YouTube)- **🔍 Multi-Source Intelligence**: Combines web search, academic research, and educational content- **🧠 Advanced LangGraph Agent**: Intelligent workflow with conditional tool routing
 
-- **YouTube Search** - Educational video discovery
+- **Quality Assessment**: Built-in response evaluation system using GPT-based helpfulness scoring
+
+- **Real-Time Streaming**: Fast, responsive chat interface with streaming responses- **💬 Real-Time Chat Interface**: Modern React-based UI with streaming responses  - **🌐 Web Search Integration**: Real-time information via Tavily API
+
+- **Source Attribution**: Automatic citation and source tracking for all information
+
+- **Smart Routing**: AI-driven tool selection based on query analysis- **📚 Source Citations**: Automatic tracking and citation of all information sources- **📚 Academic Search**: ArXiv paper search and analysis
+
+
+
+## Architecture- **🎯 Smart Tool Selection**: AI-driven selection of optimal search tools per query- **📊 Quality Control**: Built-in helpfulness evaluation
+
+
+
+**Frontend** (Next.js + TypeScript)- **⚡ High Performance**: FastAPI backend with optimized response streaming- **💬 Modern Chat UI**: React + Next.js with streaming responses
+
+- Modern React-based chat interface
+
+- Real-time streaming responses- **🎨 Modern Design**: Clean, responsive interface with dark theme- **🎨 Beautiful Design**: Black & gold themed interface
+
+- Source panel with citations
+
+- Responsive design with dark theme- **📱 Responsive**: Works on desktop and mobile
+
+
+
+**Backend** (FastAPI + LangGraph)## 🛠 Tech Stack- **🔒 Secure**: User-provided API keys (no server-side key storage)
+
+- LangGraph workflow orchestration
+
+- Multi-tool agent with conditional routing
+
+- Response quality evaluation
+
+- RESTful API with streaming support### Backend## 🚀 Live Demo
+
+
+
+**AI Tools**- **LangGraph** - Advanced AI agent workflow orchestration
+
+- Web Search (Tavily API)
+
+- Academic Search (ArXiv API) - **LangChain** - Tool integration and prompt engineering- **Frontend**: https://myfirstadvanced-ib93xxsdh-inesaranabs-projects.vercel.app
+
+- Video Search (YouTube API)
+
+- Helpfulness Evaluation (OpenAI GPT)- **FastAPI** - High-performance async API framework- **Backend API**: https://langgraph-ai-agent-production-561e.up.railway.app
+
+
+
+## Quick Start- **OpenAI GPT-4** - Advanced language model- **API Docs**: https://langgraph-ai-agent-production-561e.up.railway.app/docs
+
+
+
+### Prerequisites- **Tavily API** - Real-time web search
+
+- Python 3.11+
+
+- Node.js 18+- **ArXiv API** - Academic paper search## 🏗️ Architecture
+
+- OpenAI API key
+
+- Tavily API key- **YouTube Search** - Educational video discovery
+
+
+
+### Setup```
+
+```bash
+
+# Clone repository### Frontend  ┌─────────────────┐    HTTPS/WSS    ┌──────────────────┐
+
+git clone https://github.com/inesaranab/langgraph-ai-agent.git
+
+cd langgraph-ai-agent- **Next.js 14** - Modern React framework with App Router│   Vercel        │ ──────────────► │   Railway        │
+
+
+
+# Setup environment- **TypeScript** - Type-safe development│   Frontend      │                 │   Backend        │
+
+cp .env.example .env
+
+# Add your API keys to .env- **Tailwind CSS** - Utility-first styling│   - Next.js     │ ◄────────────── │   - FastAPI      │
+
+
+
+# Install dependencies- **Streaming API** - Real-time response updates│   - React       │    JSON/SSE     │   - LangGraph    │
+
+pip install -r requirements.txt
+
+cd frontend && npm install && cd ..│   - TypeScript  │                 │   - AI Tools     │
+
+
+
+# Launch application### Infrastructure└─────────────────┘                 └──────────────────┘
+
+python dev.py
+
+```- **Railway** - Backend cloud deployment```
+
+
+
+## API Endpoints- **Vercel** - Frontend deployment and CDN
+
+
+
+### Health Check- **Docker** - Containerized deployments## 🛠️ Tech Stack
+
+```http
+
+GET /health
 
 ```
 
-### Frontend  ┌─────────────────┐    HTTPS/WSS    ┌──────────────────┐
-
-- **Next.js 14** - Modern React framework with App Router│   Vercel        │ ──────────────► │   Railway        │
-
-- **TypeScript** - Type-safe development│   Frontend      │                 │   Backend        │
-
-- **Tailwind CSS** - Utility-first styling│   - Next.js     │ ◄────────────── │   - FastAPI      │
-
-- **Streaming API** - Real-time response updates│   - React       │    JSON/SSE     │   - LangGraph    │
-
-│   - TypeScript  │                 │   - AI Tools     │
-
-### Infrastructure└─────────────────┘                 └──────────────────┘
-
-- **Railway** - Backend cloud deployment```
-
-- **Vercel** - Frontend deployment and CDN
-
-- **Docker** - Containerized deployments## 🛠️ Tech Stack
-
-
-
 ## 🌐 Live Demo**Frontend:**
 
-- Next.js 14 (App Router)
+### Chat
 
-**Production Application**: https://myfirstadvanced-r0yha9x6b-inesaranabs-projects.vercel.app- React 18 + TypeScript
+```http- Next.js 14 (App Router)
 
-- Tailwind CSS
+POST /chat/stream
 
-## ⚡ Quick Start- Server-Sent Events (SSE)
+Content-Type: application/json**Production Application**: https://myfirstadvanced-r0yha9x6b-inesaranabs-projects.vercel.app- React 18 + TypeScript
 
 
 
-### Prerequisites**Backend:**
+{- Tailwind CSS
 
-- Python 3.11+- FastAPI + Uvicorn
+  "message": "Your question",
 
-- Node.js 18+- LangGraph + LangChain
+  "session_id": "unique-id",## ⚡ Quick Start- Server-Sent Events (SSE)
 
-- OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))- OpenAI GPT-4o-mini
+  "openai_api_key": "your-key",
 
-- Tavily API Key ([Get one here](https://tavily.com/))- Tavily Web Search API
+  "tavily_api_key": "your-key"
 
-- ArXiv API
+}
 
-### 1. Clone & Setup
+```### Prerequisites**Backend:**
 
-```bash**Deployment:**
 
-git clone https://github.com/inesaranab/langgraph-ai-agent.git- Frontend: Vercel
 
-cd langgraph-ai-agent- Backend: Railway
+## Project Structure- Python 3.11+- FastAPI + Uvicorn
 
-- Database: In-memory (Redis ready)
 
-# Backend setup
 
-python -m venv .venv## 📁 Project Structure
+```- Node.js 18+- LangGraph + LangChain
 
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+├── backend/           # FastAPI server
 
-pip install -r requirements.txt```
+├── frontend/          # Next.js application- OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))- OpenAI GPT-4o-mini
 
-langgraph-ai-agent/
+├── src/
+
+│   ├── agents/        # LangGraph agent implementation- Tavily API Key ([Get one here](https://tavily.com/))- Tavily Web Search API
+
+│   ├── tools/         # Search and evaluation tools
+
+│   └── utils/         # Configuration and utilities- ArXiv API
+
+└── tests/            # Test suites
+
+```### 1. Clone & Setup
+
+
+
+## Deployment```bash**Deployment:**
+
+
+
+- **Frontend**: Deployed on Vercelgit clone https://github.com/inesaranab/langgraph-ai-agent.git- Frontend: Vercel
+
+- **Backend**: Deployed on Railway
+
+- **Database**: Stateless (session-based)cd langgraph-ai-agent- Backend: Railway
+
+
+
+## Tech Stack- Database: In-memory (Redis ready)
+
+
+
+**Backend**: FastAPI, LangGraph, LangChain, OpenAI, Tavily, ArXiv  # Backend setup
+
+**Frontend**: Next.js, TypeScript, Tailwind CSS  
+
+**Infrastructure**: Railway, Vercel, Dockerpython -m venv .venv## 📁 Project Structure
+
+
+
+## Contributingsource .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+
+
+1. Fork the repositorypip install -r requirements.txt```
+
+2. Create a feature branch
+
+3. Make your changeslanggraph-ai-agent/
+
+4. Submit a pull request
 
 # Frontend setup  ├── 🚀 Production Deployments
 
+## License
+
 cd frontend && npm install && cd ..│   ├── backend/main.py          # Railway backend
 
+MIT License - see LICENSE file for details.
 ```│   └── frontend/               # Vercel frontend
 
 ├── 🤖 AI Agent Core
