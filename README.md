@@ -1,21 +1,43 @@
 # LangGraph AI Agent 🤖
 
-A production-ready AI agent application built with **LangGraph**, featuring a modern React frontend and FastAPI backend with full tool integration.
+A production-ready AI agent application built with **LangGraph**, featuring a modern ReacVisit: http://localhost:3000
+
+## 🎬 YouTube Integration
+
+The app automatically searches for educational YouTube videos related to your queries! 
+
+**Features:**
+- **No API Key Required**: Uses the `youtube-search` library
+- **Educational Focus**: Finds tutorials, explanations, and learning resources
+- **Rich Metadata**: Displays video duration, channel, and thumbnails
+- **Visual Design**: Red-themed YouTube sources with Play button icons
+- **Smart Integration**: Automatically triggered for learning-related questions
+
+**Example queries that trigger YouTube search:**
+- "How do I learn Python programming?"
+- "Explain machine learning concepts"
+- "React tutorial for beginners"
+- "JavaScript fundamentals"
+
+The YouTube videos appear in the **Sources panel** with a distinctive red theme and can be filtered separately from web and academic sources.
+
+## 🌍 Environment Variablesntend and FastAPI backend with full tool integration.
 
 ## ✨ Features
 
 - **🧠 Advanced LangGraph Agent**: Intelligent workflow with conditional tool routing
 - **🌐 Web Search Integration**: Real-time information via Tavily API
 - **📚 Academic Search**: ArXiv paper search and analysis
+- **🎬 Educational Videos**: YouTube search integration for learning resources
 - **📊 Quality Control**: Built-in helpfulness evaluation
 - **💬 Modern Chat UI**: React + Next.js with streaming responses
-- **🎨 Beautiful Design**: Black & gold themed interface
+- **🎨 Beautiful Design**: Black & gold themed interface with color-coded sources
 - **📱 Responsive**: Works on desktop and mobile
 - **🔒 Secure**: User-provided API keys (no server-side key storage)
 
 ## 🚀 Live Demo
 
-- **Frontend**: https://myfirstadvanced-ib93xxsdh-inesaranabs-projects.vercel.app
+- **Frontend**: https://myfirstadvanced-ipvmmodlp-inesaranabs-projects.vercel.app
 - **Backend API**: https://langgraph-ai-agent-production-561e.up.railway.app
 - **API Docs**: https://langgraph-ai-agent-production-561e.up.railway.app/docs
 
@@ -45,6 +67,7 @@ A production-ready AI agent application built with **LangGraph**, featuring a mo
 - OpenAI GPT-4o-mini
 - Tavily Web Search API
 - ArXiv API
+- YouTube Search (no API key required)
 
 **Deployment:**
 - Frontend: Vercel
@@ -60,7 +83,7 @@ langgraph-ai-agent/
 │   └── frontend/               # Vercel frontend
 ├── 🤖 AI Agent Core
 │   ├── src/agents/             # LangGraph workflows
-│   ├── src/tools/              # AI tools (Tavily, ArXiv)
+│   ├── src/tools/              # AI tools (Tavily, ArXiv, YouTube)
 │   └── src/utils/              # Configuration
 ├── 🎨 Frontend
 │   ├── app/                    # Next.js app router
@@ -79,12 +102,14 @@ langgraph-ai-agent/
 ### Prerequisites
 - OpenAI API Key ([Get one here](https://platform.openai.com/api-keys))
 - Tavily API Key ([Get one here](https://tavily.com)) - Optional for web search
+- No additional API keys needed for YouTube search integration! 🎬
 
 ### Option 1: Use Live Demo
-1. Visit the [live demo](https://myfirstadvanced-ib93xxsdh-inesaranabs-projects.vercel.app)
+1. Visit the [live demo](https://myfirstadvanced-ipvmmodlp-inesaranabs-projects.vercel.app)
 2. Click the ⚙️ settings icon
 3. Enter your API keys
-4. Start chatting!
+4. Try asking: "How do I learn React programming?" to see YouTube integration!
+5. Start chatting!
 
 ### Option 2: Local Development
 
@@ -166,6 +191,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 - **LangGraph** for the agent framework
 - **OpenAI** for GPT models
 - **Tavily** for web search capabilities
+- **YouTube Search** library for educational video discovery
 - **Vercel** & **Railway** for hosting
 
 ---
