@@ -52,14 +52,17 @@ export class ChatService {
   constructor() {
     // Configure for production deployment
     const isDevelopment = process.env.NODE_ENV === 'development'
+    const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost'
     
-    if (isDevelopment) {
+    if (isDevelopment && isLocalhost) {
       // Local development
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
     } else {
       // Production: Vercel frontend + Railway backend
       this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
     }
+    
+    console.log('ChatService initialized with baseUrl:', this.baseUrl)
   }
 
   setApiKeys(openaiKey: string, tavilyKey: string) {
