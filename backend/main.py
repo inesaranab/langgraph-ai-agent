@@ -88,14 +88,27 @@ sessions = {}
 def get_agent_with_keys(openai_key: Optional[str] = None, tavily_key: Optional[str] = None):
     """Get agent instance with provided API keys"""
     try:
-        if openai_key and tavily_key:
-            return LangGraphAgent(config, openai_key, tavily_key)
+        # Check if both keys are provided and non-empty
+        if openai_key and openai_key.strip() and tavily_key and tavily_key.strip():
+            return LangGraphAgent(config, openai_key.strip(), tavily_key.strip())
         elif agent is not None:
             return agent
         else:
-            raise ValueError("No API keys provided and no default agent available")
+            # Provide specific error message about missing API keys
+            missing_keys = []
+            if not (openai_key and openai_key.strip()):
+                missing_keys.append("OpenAI API key")
+            if not (tavily_key and tavily_key.strip()):
+                missing_keys.append("Tavily API key")
+            
+            if missing_keys:
+                error_msg = f"Missing required API keys: {', '.join(missing_keys)}. Please add them in the settings."
+            else:
+                error_msg = "No API keys provided and no default agent available"
+            
+            raise ValueError(error_msg)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to initialize agent: {str(e)}")
+        raise HTTPException(status_code=422, detail=f"API keys required: {str(e)}")
 
 @app.on_event("startup")
 async def startup_event():
