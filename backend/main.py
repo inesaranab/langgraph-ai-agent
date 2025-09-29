@@ -113,6 +113,16 @@ async def startup_event():
     except Exception as e:
         print(f"Failed to initialize agent: {e}")
 
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "LangGraph AI Agent API v2", 
+        "version": "2.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
