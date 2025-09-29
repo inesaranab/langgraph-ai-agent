@@ -1,13 +1,15 @@
 """
-LangGraph Agent Implementation
-Core agent logic with tool integration and state management
+LangGraph Agent Implementation v2
+Simplified agent logic with tool integration and state management
 """
 
 import time
-from typing import Dict, List, Any, Optional, TypedDict
+from typing import Dict, List, Any, Optional, TypedDict, Annotated
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode
 from langgraph.graph import StateGraph, END
 import uuid
 
@@ -20,18 +22,13 @@ from src.utils.config import AppConfig
 
 class AgentState(TypedDict):
     """State definition for the agent"""
-    messages: List[Any]
-    query: str
-    response: str
+    messages: Annotated[list, add_messages]
     tools_used: List[str]
     search_results: List[Dict]
     youtube_videos: List[Dict]
     helpfulness_score: Optional[float]
     session_id: str
     iteration_count: int
-    needs_web_search: bool
-    needs_arxiv_search: bool
-    needs_youtube_search: bool
 
 
 class LangGraphAgent:
@@ -68,6 +65,12 @@ class LangGraphAgent:
             self.arxiv_tool.get_tool(),
             self.youtube_tool.get_tool()
         ]
+
+        # Model with tools
+        self.llm_with_tools = self.llm.bind_tools(self.tools)
+
+        # Tool Node
+        self._tool_node = ToolNode(self.tools)
         
         # Build the graph
         self.graph = self._build_graph()
@@ -77,167 +80,47 @@ class LangGraphAgent:
         workflow = StateGraph(AgentState)
         
         # Add nodes
-        workflow.add_node("analyzer", self._analyze_query)
-        workflow.add_node("tool_caller", self._call_tools)
-        workflow.add_node("responder", self._generate_response)
+        workflow.add_node("agent", self._call_model)
+        workflow.add_node("action", self._tool_node)
         workflow.add_node("helpfulness_checker", self._check_helpfulness)
         
         # Add edges
-        workflow.set_entry_point("analyzer")
+        workflow.set_entry_point("agent")
         workflow.add_conditional_edges(
-            "analyzer",
-            self._should_use_tools,
-            {
-                "use_tools": "tool_caller",
-                "direct_response": "responder"
-            }
+            "agent",
+            self._should_continue
         )
-        workflow.add_edge("tool_caller", "responder")
-        workflow.add_edge("responder", "helpfulness_checker")
+        workflow.add_edge("action", "agent")
         workflow.add_conditional_edges(
             "helpfulness_checker",
             self._should_regenerate,
             {
-                "regenerate": "responder",
+                "regenerate": "agent",
                 "finish": END
             }
         )
         
         return workflow.compile()
     
-    def _analyze_query(self, state: AgentState) -> AgentState:
-        """Analyze the user query to determine next steps"""
-        query = state["query"]
-        
-        try:
-            query_lower = query.lower()
-            
-            # More inclusive criteria for web search - most queries benefit from current information
-            needs_web_search = any(word in query_lower for word in [
-                "news", "current", "recent", "today", "latest", "what's happening",
-                "weather", "stock", "price", "trends", "developments", "updates",
-                "companies", "technology", "AI", "artificial intelligence"
-            ]) or len(query.split()) > 3  # Complex queries likely need web search
-            
-            # Search for academic content when specifically requested or for research topics
-            needs_arxiv_search = any(word in query_lower for word in [
-                "research", "paper", "study", "academic", "scientific", 
-                "arxiv", "journal", "publication", "algorithm", "machine learning"
-            ])
-            
-            # Search for YouTube videos when educational content would be helpful
-            needs_youtube_search = any(word in query_lower for word in [
-                "how to", "tutorial", "explain", "learn", "guide", "demonstration",
-                "step by step", "show me", "teach", "course", "lesson", "example"
-            ]) or any(topic in query_lower for topic in [
-                "programming", "coding", "python", "javascript", "math", "science",
-                "physics", "chemistry", "biology", "history", "art", "music"
-            ])
-            
-            state["needs_web_search"] = needs_web_search
-            state["needs_arxiv_search"] = needs_arxiv_search
-            state["needs_youtube_search"] = needs_youtube_search
-            
-            print(f"DEBUG: Query analysis - Web: {needs_web_search}, ArXiv: {needs_arxiv_search}, YouTube: {needs_youtube_search}")
-            
-        except Exception as e:
-            print(f"Analysis error: {e}")
-            state["needs_web_search"] = False
-            state["needs_arxiv_search"] = False
-            state["needs_youtube_search"] = False
-            
-        return state
+    def _call_model(self, state: AgentState):
+        """Call LLM with automatic tool selection"""
+        messages = state["messages"]
+        response = self.llm_with_tools.invoke(messages)
+        return {'messages': [response]}
     
-    def _should_use_tools(self, state: AgentState) -> str:
-        """Decide whether to use tools or respond directly"""
-        if state.get("needs_web_search") or state.get("needs_arxiv_search") or state.get("needs_youtube_search"):
-            return "use_tools"
-        return "direct_response"
-    
-    def _call_tools(self, state: AgentState) -> AgentState:
-        """Execute relevant tools based on analysis"""
-        query = state["query"]
-        search_results = []
-        youtube_videos = []
-        tools_used = []
-        
-        # Web search if needed
-        if state.get("needs_web_search"):
-            try:
-                web_results = self.tavily_tool.search(query)
-                search_results.extend(web_results)
-                tools_used.append("web_search")
-            except Exception as e:
-                print(f"Web search error: {e}")
-        
-        # ArXiv search if needed
-        if state.get("needs_arxiv_search"):
-            try:
-                arxiv_results = self.arxiv_tool.search(query)
-                search_results.extend(arxiv_results)
-                tools_used.append("arxiv_search")
-            except Exception as e:
-                print(f"ArXiv search error: {e}")
-        
-        # YouTube search if needed
-        if state.get("needs_youtube_search"):
-            try:
-                youtube_results = self.youtube_tool.search(query)
-                youtube_videos.extend(youtube_results)
-                tools_used.append("youtube_search")
-            except Exception as e:
-                print(f"YouTube search error: {e}")
-        
-        state["search_results"] = search_results
-        state["youtube_videos"] = youtube_videos
-        state["tools_used"] = tools_used
-        
-        return state
-    
-    def _generate_response(self, state: AgentState) -> AgentState:
-        """Generate the final response"""
-        query = state["query"]
-        search_results = state.get("search_results", [])
-        youtube_videos = state.get("youtube_videos", [])
-        
-        # Create context from search results
-        context = ""
-        if search_results:
-            context = "\n\nRelevant information:\n"
-            for i, result in enumerate(search_results[:5], 1):
-                context += f"{i}. {result.get('title', 'N/A')}: {result.get('content', result.get('snippet', 'No content'))}\n"
-        
-        # Generate response
-        system_message = """You are a helpful AI assistant. Provide comprehensive, accurate, and helpful responses. 
-        If you have search results, incorporate them naturally into your response while citing sources when appropriate.
-        Be conversational but informative."""
-        
-        messages = [
-            SystemMessage(content=system_message),
-            HumanMessage(content=f"Query: {query}{context}")
-        ]
-        
-        try:
-            response = self.llm.invoke(messages)
-            main_response = str(response.content) if hasattr(response.content, '__str__') else str(response.content)
-            
-            # Add YouTube video appendix if available
-            if youtube_videos:
-                video_appendix = self.youtube_tool.format_videos_for_response(youtube_videos, query)
-                main_response += video_appendix
-            
-            state["response"] = main_response
-        except Exception as e:
-            state["response"] = f"I apologize, but I encountered an error while generating a response: {str(e)}"
-        
-        return state
+    def _should_continue(self, state: AgentState) -> str:
+        """Decide whether to use tools or check helpfulness"""
+        last_message = state["messages"][-1]
+        if last_message.tool_calls:
+            return "action"
+        return "helpfulness_checker"
     
     def _check_helpfulness(self, state: AgentState) -> AgentState:
         """Check if the response is helpful"""
         try:
             score = self.helpfulness_checker.evaluate(
-                state["query"], 
-                state["response"]
+                state["messages"][-1], 
+                state["messages"][0]
             )
             state["helpfulness_score"] = score
         except Exception as e:
@@ -265,20 +148,15 @@ class LangGraphAgent:
         if not session_id:
             session_id = str(uuid.uuid4())
         
-        # Initial state
+        # Initial state - FIXED: Added user query as HumanMessage
         initial_state: AgentState = {
-            "messages": [],
-            "query": query,
-            "response": "",
+            "messages": [HumanMessage(content=query)],
             "tools_used": [],
             "search_results": [],
             "youtube_videos": [],
             "helpfulness_score": None,
             "session_id": session_id,
             "iteration_count": 0,
-            "needs_web_search": False,
-            "needs_arxiv_search": False,
-            "needs_youtube_search": False
         }
         
         try:
@@ -335,8 +213,9 @@ class LangGraphAgent:
             
             print(f"DEBUG: Final metadata includes {len(metadata.get('sources', []))} sources")
             
+            # FIXED: Extract response from messages instead of non-existent 'response' key
             return {
-                "response": final_state.get("response", "No response generated"),
+                "response": final_state["messages"][-1].content if final_state["messages"] else "No response generated",
                 "metadata": metadata
             }
             

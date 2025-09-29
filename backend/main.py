@@ -25,7 +25,7 @@ src_dir = os.path.join(parent_dir, 'src')
 sys.path.insert(0, parent_dir)
 sys.path.insert(0, src_dir)
 
-from src.agents.langgraph_agent import LangGraphAgent
+from src.agents.langgraph_agentv2 import LangGraphAgent
 from src.utils.config import AppConfig
 
 # Load environment variables
@@ -33,9 +33,9 @@ load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="LangGraph AI Agent API",
-    description="REST API for LangGraph AI Agent",
-    version="1.0.0"
+    title="LangGraph AI Agent API v2",
+    description="REST API for LangGraph AI Agent (v2 - Simplified Architecture)",
+    version="2.0.0"
 )
 
 # Configure CORS for Railway deployment
@@ -117,7 +117,7 @@ async def startup_event():
 async def health_check():
     """Health check endpoint"""
     return HealthResponse(
-        status="healthy",
+        status="healthy-v2",
         timestamp=datetime.now(),
         agent_ready=agent is not None,
         api_keys_configured=bool(os.getenv("OPENAI_API_KEY") and os.getenv("TAVILY_API_KEY"))

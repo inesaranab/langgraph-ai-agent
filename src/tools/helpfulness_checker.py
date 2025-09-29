@@ -6,18 +6,20 @@ Evaluates response quality and helpfulness
 from typing import Optional
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
-
+import os
+from pydantic import SecretStr
 
 class HelpfulnessChecker:
     """Tool to evaluate response helpfulness"""
     
     def __init__(self, api_key: Optional[str] = None):
-        import os
+        
         openai_key = api_key or os.getenv("OPENAI_API_KEY")
+        secret_key = SecretStr(openai_key) if openai_key is not None else None
         self.llm = ChatOpenAI(
             model="gpt-3.5-turbo",
             temperature=0,
-            api_key=openai_key
+            api_key=secret_key
         )
     
     def evaluate(self, query: str, response: str) -> float:
