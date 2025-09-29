@@ -17,7 +17,7 @@ OLD_VERCEL_URLS = [
 
 # NEW URLs (replace these with your actual new URLs)
 NEW_RAILWAY_URL = "https://langgraph-ai-agent-production-7799.up.railway.app"
-NEW_VERCEL_URL = "YOUR_NEW_VERCEL_URL_HERE"    # e.g., "https://your-new-app.vercel.app"
+NEW_VERCEL_URL = "https://myfirstadvanced-hnfcf9t6r-inesaranabs-projects.vercel.app"
 
 def update_urls_in_project():
     """Update all URLs in the project"""

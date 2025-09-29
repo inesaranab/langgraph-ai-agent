@@ -30,6 +30,7 @@ class AgentState(TypedDict):
     helpfulness_score: Optional[float]
     session_id: str
     iteration_count: int
+    total_iterations: int
 
 
 class LangGraphAgent:
@@ -105,12 +106,27 @@ class LangGraphAgent:
     
     def _call_model(self, state: AgentState):
         """Call LLM with automatic tool selection"""
+        total_iterations = state.get("total_iterations", 0)
+        print(f"DEBUG: _call_model - Total iterations: {total_iterations}")
+        
+        if total_iterations > 15:
+            print("WARNING: Maximum iterations reached in _call_model, returning simple response")
+            return {'messages': [AIMessage(content="I've processed your request. Due to complexity limits, I'm providing this response to avoid system overload.")]}
+        
         messages = state["messages"]
         response = self.llm_with_tools.invoke(messages)
         return {'messages': [response]}
     
     def _should_continue(self, state: AgentState) -> str:
         """Decide whether to use tools or check helpfulness"""
+        # Increment total iterations to prevent infinite loops
+        state["total_iterations"] = state.get("total_iterations", 0) + 1
+        
+        # Hard limit to prevent recursion errors
+        if state["total_iterations"] > 15:
+            print(f"WARNING: Reached maximum iterations ({state['total_iterations']}), stopping to prevent recursion")
+            return "helpfulness_checker"
+        
         last_message = state["messages"][-1]
         if last_message.tool_calls:
             return "action"
@@ -134,10 +150,16 @@ class LangGraphAgent:
         """Decide whether to regenerate response based on helpfulness"""
         helpfulness_score = state.get("helpfulness_score", 0.5)
         iteration_count = state.get("iteration_count", 0)
+        total_iterations = state.get("total_iterations", 0)
         
-        # Regenerate if score is low and we haven't tried too many times
-        if helpfulness_score is not None and helpfulness_score < 0.3 and iteration_count < 2:
+        # Conservative regeneration: only if score is very low, few iterations, and under total limit
+        if (helpfulness_score is not None and 
+            helpfulness_score < 0.3 and 
+            iteration_count < 1 and  # Reduced from 2 to 1
+            total_iterations < 10):   # Added total iteration check
+            
             state["iteration_count"] = iteration_count + 1
+            print(f"Regenerating response (attempt {iteration_count + 1}) due to low helpfulness score: {helpfulness_score}")
             return "regenerate"
         
         return "finish"
@@ -158,6 +180,7 @@ class LangGraphAgent:
             "helpfulness_score": None,
             "session_id": session_id,
             "iteration_count": 0,
+            "total_iterations": 0,
         }
         
         try:
