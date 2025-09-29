@@ -1,61 +1,39 @@
-# LangGraph Workflow Diagrams
+# LangGraph AI Agent - Workflow Diagrams
 
-This folder contains visual representations of the actual LangGraph workflow extracted from the live agent code.
+This directory contains the visual representation of the LangGraph AI Agent workflow.
 
-## Generated Diagrams
+## Files
 
-### 🏗️ `langgraph_workflow_actual.png`
-**Main workflow extracted from the compiled LangGraph agent**
+### `complete_workflow.mmd`
+Mermaid source file containing the complete workflow diagram with:
+- **5-Node LangGraph Flow**: START → Analyzer → Tool Caller → Response Generator → Quality Checker → END
+- **Multi-Tool Integration**: Web Search (Tavily) + Academic Search (ArXiv) + Educational Search (YouTube)
+- **Smart Analysis Logic**: Query-based routing to appropriate tools
+- **Quality Control**: Helpfulness scoring and response regeneration
+- **State Management**: Complete AgentState field documentation
 
-- Shows the actual 5-node workflow: Analyzer → Tool Caller → Responder → Helpfulness Checker
-- Displays conditional routing based on `_should_use_tools()` and `_should_regenerate()`
-- Represents the exact structure as built by `LangGraphAgent._build_graph()`
+### `complete_workflow.png`
+Generated PNG visualization of the complete workflow.
 
-**Extracted Nodes**: `['__start__', 'analyzer', 'tool_caller', 'responder', 'helpfulness_checker']`
+## Key Features Shown
 
-### 🔧 `tool_details.png`
-**Detailed tool execution and analysis logic**
+✅ **YouTube Integration**: Educational content search with triggers like "tutorial", "how to", "guide"  
+✅ **ArXiv Integration**: Academic paper search for research queries  
+✅ **Web Search**: General information via Tavily API  
+✅ **Quality Control**: GPT-based helpfulness evaluation with regeneration loop  
+✅ **State Management**: Complete tracking of search results, tools used, and video content  
 
-- Shows the internal logic of the Tool Caller node
-- Details the analysis criteria for web search vs ArXiv search
-- Explains the quality control evaluation process
-- Maps the trigger words and conditions for each tool
+## Usage
 
-### 📊 `state_flow.png`
-**AgentState data flow through the workflow**
-
-- Visualizes how the AgentState object evolves through each node
-- Shows which fields are populated at each stage
-- Tracks the data transformation from initial query to final response
-
-## Source Files
-
-- **`extract_workflow.py`**: Python script that rebuilds the actual LangGraph agent and extracts its structure
-- **`*.mmd`**: Mermaid diagram source files
-- **`*.png`**: Generated PNG images from Mermaid diagrams
-
-## How It Works
-
-1. The `extract_workflow.py` script imports the actual `LangGraphAgent` class
-2. Builds the agent with dummy API keys to access the compiled graph structure
-3. Extracts the real node names and connections from `agent.graph`
-4. Generates accurate Mermaid diagrams reflecting the true workflow
-5. Exports diagrams to PNG using `@mermaid-js/mermaid-cli`
-
-## Accuracy
-
-✅ **These diagrams represent the ACTUAL workflow structure**, not a theoretical or simplified version.
-
-The script directly accesses:
-- `compiled_graph.nodes`: Real node names from the LangGraph compilation
-- `compiled_graph.channels`: State channels and routing information  
-- Method signatures from the agent implementation
-
-## Updates
-
-To regenerate diagrams after code changes:
+To regenerate the PNG from the Mermaid source:
 ```bash
-python extract_workflow.py
+npx @mermaid-js/mermaid-cli -i complete_workflow.mmd -o complete_workflow.png
 ```
 
-This ensures the visual documentation stays synchronized with the actual implementation.
+## Workflow Summary
+
+1. **Query Analysis** → Determines which tools are needed based on content type
+2. **Tool Execution** → Runs appropriate searches (Web/ArXiv/YouTube) 
+3. **Response Generation** → Creates comprehensive answer with citations
+4. **Quality Check** → Evaluates helpfulness and regenerates if needed
+5. **Final Output** → Returns response with metadata and source tracking

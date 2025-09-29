@@ -45,7 +45,7 @@ This application combines the power of LangGraph's workflow orchestration with m
 - Tavily API key
 
 ### Setup
-``bash
+```bash
 # Clone repository
 git clone https://github.com/inesaranab/langgraph-ai-agent.git
 cd langgraph-ai-agent
@@ -60,17 +60,17 @@ cd frontend && npm install && cd ..
 
 # Launch application
 python dev.py
-``
+```
 
 ## API Endpoints
 
 ### Health Check
-``http
+```http
 GET /health
-``
+```
 
 ### Chat
-``http
+```http
 POST /chat/stream
 Content-Type: application/json
 
@@ -80,11 +80,11 @@ Content-Type: application/json
   "openai_api_key": "your-key",
   "tavily_api_key": "your-key"
 }
-``
+```
 
 ## Project Structure
 
-``
+```
  backend/           # FastAPI server
  frontend/          # Next.js application
  src/
@@ -92,7 +92,7 @@ Content-Type: application/json
     tools/         # Search and evaluation tools
     utils/         # Configuration and utilities
  tests/            # Test suites
-``
+```
 
 ## Deployment
 

@@ -4,7 +4,8 @@ Core agent logic with tool integration and state management
 """
 
 import time
-from typing import Dict, List, Any, Optional, TypedDict
+from typing import Dict, List, Any, Optional
+from typing_extensions import TypedDict
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -31,6 +32,7 @@ class AgentState(TypedDict):
     iteration_count: int
     needs_web_search: bool
     needs_arxiv_search: bool
+    needs_youtube_search: bool
 
 
 class LangGraphAgent:
@@ -124,21 +126,31 @@ class LangGraphAgent:
                 "arxiv", "journal", "publication", "algorithm", "machine learning"
             ])
             
+            # Search for YouTube videos when users want tutorials, explanations, or learning content
+            needs_youtube_search = any(word in query_lower for word in [
+                "how to", "tutorial", "learn", "explain", "show me", "teach", 
+                "guide", "demonstration", "example", "video", "watch", "course",
+                "lesson", "training", "instructions", "walkthrough", "beginner"
+            ]) or any(phrase in query_lower for phrase in [
+                "step by step", "getting started", "for beginners"
+            ])
+            
             state["needs_web_search"] = needs_web_search
             state["needs_arxiv_search"] = needs_arxiv_search
+            state["needs_youtube_search"] = needs_youtube_search
             
-            print(f"DEBUG: Query analysis - Web: {needs_web_search}, ArXiv: {needs_arxiv_search}")
-            
+
         except Exception as e:
             print(f"Analysis error: {e}")
             state["needs_web_search"] = False
             state["needs_arxiv_search"] = False
+            state["needs_youtube_search"] = False
             
         return state
     
     def _should_use_tools(self, state: AgentState) -> str:
         """Decide whether to use tools or respond directly"""
-        if state.get("needs_web_search") or state.get("needs_arxiv_search"):
+        if state.get("needs_web_search") or state.get("needs_arxiv_search") or state.get("needs_youtube_search"):
             return "use_tools"
         return "direct_response"
     
@@ -166,7 +178,20 @@ class LangGraphAgent:
             except Exception as e:
                 print(f"ArXiv search error: {e}")
         
+        # YouTube search if needed
+        youtube_videos = []
+        if state.get("needs_youtube_search"):
+            try:
+                youtube_results = self.youtube_tool.search(query, max_results=3)
+                youtube_videos = youtube_results
+                # Also add to search_results for unified processing
+                search_results.extend(youtube_results)
+                tools_used.append("youtube_search")
+            except Exception as e:
+                print(f"YouTube search error: {e}")
+        
         state["search_results"] = search_results
+        state["youtube_videos"] = youtube_videos
         state["tools_used"] = tools_used
         
         return state
@@ -246,7 +271,8 @@ class LangGraphAgent:
             "session_id": session_id,
             "iteration_count": 0,
             "needs_web_search": False,
-            "needs_arxiv_search": False
+            "needs_arxiv_search": False,
+            "needs_youtube_search": False
         }
         
         try:
@@ -258,10 +284,7 @@ class LangGraphAgent:
             # Format sources for frontend
             sources = []
             search_results = final_state.get("search_results", [])
-            print(f"DEBUG: Found {len(search_results)} search results")
-            
             for result in search_results:
-                print(f"DEBUG: Processing result: {result.get('title', 'No title')}")
                 source = {
                     "title": result.get("title", "Unknown Title"),
                     "url": result.get("url", ""),
@@ -272,8 +295,6 @@ class LangGraphAgent:
                 }
                 sources.append(source)
             
-            print(f"DEBUG: Formatted {len(sources)} sources for frontend")
-
             metadata = {
                 "tools_used": final_state.get("tools_used", []),
                 "processing_time": processing_time,
@@ -283,11 +304,12 @@ class LangGraphAgent:
                 "sources": sources[:10]  # Limit to top 10 sources
             }
             
-            print(f"DEBUG: Final metadata includes {len(metadata.get('sources', []))} sources")
-            
             return {
                 "response": final_state.get("response", "No response generated"),
-                "metadata": metadata
+                "metadata": metadata,
+                "tools_used": final_state.get("tools_used", []),
+                "youtube_videos": len(final_state.get("youtube_videos", [])),
+                "search_results": len(final_state.get("search_results", []))
             }
             
         except Exception as e:

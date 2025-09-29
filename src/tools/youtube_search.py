@@ -34,14 +34,22 @@ class YouTubeSearchTool:
             
             videos = []
             for video in results:
+                # Handle description safely
+                long_desc = video.get("long_desc") or "No description available"
+                description = long_desc[:200] + "..." if len(long_desc) > 200 else long_desc
+                
+                # Handle thumbnail safely
+                thumbnails = video.get("thumbnails", [])
+                thumbnail_url = thumbnails[0] if thumbnails else ""
+                
                 video_data = {
                     "title": video.get("title", "Unknown Title"),
                     "url": f"https://www.youtube.com{video.get('url_suffix', '')}",
-                    "description": video.get("long_desc", "No description available")[:200] + "...",
+                    "description": description,
                     "duration": video.get("duration", "Unknown"),
                     "channel": video.get("channel", "Unknown Channel"),
                     "published_date": video.get("publish_time", "Unknown"),
-                    "thumbnail": video.get("thumbnails", [{}])[0].get("url", "") if video.get("thumbnails") else "",
+                    "thumbnail": thumbnail_url,
                     "views": video.get("views", "Unknown"),
                     "type": "youtube",
                     "score": 0.8  # High score for educational content

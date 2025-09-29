@@ -15,6 +15,7 @@ langchain-openai==0.1.25
 # Tools
 tavily-python==0.3.3
 arxiv==2.1.0
+youtube-search==2.1.2
 
 # Environment
 python-dotenv==1.0.0
