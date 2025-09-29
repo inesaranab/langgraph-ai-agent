@@ -38,3 +38,6 @@ logs/
 
 # Vercel
 .vercel
+
+# Generated diagrams (optional - commit PNGs if you want them in repo)
+diagrams/*.mmd
