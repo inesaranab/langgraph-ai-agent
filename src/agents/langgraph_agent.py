@@ -33,6 +33,7 @@ class AgentState(TypedDict):
     needs_web_search: bool
     needs_arxiv_search: bool
     needs_youtube_search: bool
+    analysis_reasoning: Optional[str]
 
 
 class LangGraphAgent:
@@ -107,44 +108,68 @@ class LangGraphAgent:
         return workflow.compile()
     
     def _analyze_query(self, state: AgentState) -> AgentState:
-        """Analyze the user query to determine next steps"""
+        """Use LLM to intelligently analyze query intent"""
         query = state["query"]
         
+        analysis_prompt = f"""
+Analyze this user query and determine what type of information sources would be most helpful.
+
+Query: "{query}"
+
+Consider the intent and information needs. Return your analysis as valid JSON with boolean values:
+
+{{
+    "needs_web_search": true/false,
+    "needs_arxiv_search": true/false, 
+    "needs_youtube_search": true/false,
+    "reasoning": "Brief explanation of your analysis"
+}}
+
+Guidelines:
+- **Web search**: Current events, news, real-time data, company information, stock prices, weather, recent developments, general knowledge that changes frequently
+- **ArXiv search**: Academic research papers, scientific studies, peer-reviewed publications, theoretical concepts, research methodology, scholarly work
+- **YouTube search**: Tutorials, how-to guides, step-by-step instructions, learning content, demonstrations, educational videos, beginner explanations
+
+Multiple sources can be selected if the query would benefit from different types of information.
+"""
+        
         try:
+            messages = [HumanMessage(content=analysis_prompt)]
+            response = self.llm.invoke(messages)
+            
+            # Parse JSON response
+            import json
+            response_text = str(response.content).strip()
+            
+            # Extract JSON if it's wrapped in code blocks
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0].strip()
+            
+            analysis = json.loads(response_text)
+            
+            state["needs_web_search"] = analysis.get("needs_web_search", False)
+            state["needs_arxiv_search"] = analysis.get("needs_arxiv_search", False)  
+            state["needs_youtube_search"] = analysis.get("needs_youtube_search", False)
+            state["analysis_reasoning"] = analysis.get("reasoning", "")
+            
+            # Ensure at least one tool is selected for non-trivial queries
+            if not any([state["needs_web_search"], state["needs_arxiv_search"], state["needs_youtube_search"]]):
+                if len(query.split()) > 2:  # For substantial queries, default to web search
+                    state["needs_web_search"] = True
+                    state["analysis_reasoning"] += " (Defaulted to web search for substantial query)"
+                    
+        except Exception as e:
+            print(f"LLM Analysis error: {e}")
+            # Intelligent fallback based on query characteristics
             query_lower = query.lower()
             
-            # More inclusive criteria for web search - most queries benefit from current information
-            needs_web_search = any(word in query_lower for word in [
-                "news", "current", "recent", "today", "latest", "what's happening",
-                "weather", "stock", "price", "trends", "developments", "updates",
-                "companies", "technology", "AI", "artificial intelligence"
-            ]) or len(query.split()) > 3  # Complex queries likely need web search
-            
-            # Search for academic content when specifically requested or for research topics
-            needs_arxiv_search = any(word in query_lower for word in [
-                "research", "paper", "study", "academic", "scientific", 
-                "arxiv", "journal", "publication", "algorithm", "machine learning"
-            ])
-            
-            # Search for YouTube videos when users want tutorials, explanations, or learning content
-            needs_youtube_search = any(word in query_lower for word in [
-                "how to", "tutorial", "learn", "explain", "show me", "teach", 
-                "guide", "demonstration", "example", "video", "watch", "course",
-                "lesson", "training", "instructions", "walkthrough", "beginner"
-            ]) or any(phrase in query_lower for phrase in [
-                "step by step", "getting started", "for beginners"
-            ])
-            
-            state["needs_web_search"] = needs_web_search
-            state["needs_arxiv_search"] = needs_arxiv_search
-            state["needs_youtube_search"] = needs_youtube_search
-            
-
-        except Exception as e:
-            print(f"Analysis error: {e}")
-            state["needs_web_search"] = False
-            state["needs_arxiv_search"] = False
-            state["needs_youtube_search"] = False
+            # Simple heuristics as fallback
+            state["needs_web_search"] = len(query.split()) > 2
+            state["needs_arxiv_search"] = any(word in query_lower for word in ["research", "study", "paper", "academic"])
+            state["needs_youtube_search"] = any(word in query_lower for word in ["how to", "tutorial", "learn", "guide"])
+            state["analysis_reasoning"] = f"Fallback analysis due to error: {str(e)}"
             
         return state
     
@@ -272,7 +297,8 @@ class LangGraphAgent:
             "iteration_count": 0,
             "needs_web_search": False,
             "needs_arxiv_search": False,
-            "needs_youtube_search": False
+            "needs_youtube_search": False,
+            "analysis_reasoning": None
         }
         
         try:
@@ -309,7 +335,8 @@ class LangGraphAgent:
                 "metadata": metadata,
                 "tools_used": final_state.get("tools_used", []),
                 "youtube_videos": len(final_state.get("youtube_videos", [])),
-                "search_results": len(final_state.get("search_results", []))
+                "search_results": len(final_state.get("search_results", [])),
+                "analysis_reasoning": final_state.get("analysis_reasoning", "")
             }
             
         except Exception as e:
