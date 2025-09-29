@@ -135,13 +135,14 @@ class LangGraphAgent:
     def _check_helpfulness(self, state: AgentState) -> AgentState:
         """Check if the response is helpful"""
         try:
-            score = self.helpfulness_checker.evaluate(
-                state["messages"][-1], 
-                state["messages"][0]
-            )
+            # Extract text content from messages
+            response_text = state["messages"][-1].content if state["messages"] else ""
+            query_text = state["messages"][0].content if len(state["messages"]) > 0 else ""
+            
+            score = self.helpfulness_checker.evaluate(query_text, response_text)
             state["helpfulness_score"] = score
         except Exception as e:
-            print(f"Helpfulness check error: {e}")
+            print(f"Helpfulness evaluation error: {e}")
             state["helpfulness_score"] = 0.5  # Default neutral score
         
         return state
@@ -152,16 +153,29 @@ class LangGraphAgent:
         iteration_count = state.get("iteration_count", 0)
         total_iterations = state.get("total_iterations", 0)
         
+        # Get original user query
+        original_query = state["messages"][0].content.lower().strip() if state["messages"] else ""
+        
+        # Don't regenerate for simple greetings/conversational queries
+        simple_queries = ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", 
+                         "how are you", "what's up", "thanks", "thank you", "bye", "goodbye"]
+        
+        if any(greeting in original_query for greeting in simple_queries):
+            print(f"Skipping regeneration for simple greeting/conversational query: '{original_query}'")
+            return "finish"
+        
         # Conservative regeneration: only if score is very low, few iterations, and under total limit
         if (helpfulness_score is not None and 
-            helpfulness_score < 0.3 and 
-            iteration_count < 1 and  # Reduced from 2 to 1
-            total_iterations < 10):   # Added total iteration check
+            helpfulness_score < 0.2 and  # Lowered threshold even more
+            iteration_count < 1 and 
+            total_iterations < 8 and     # Reduced total limit
+            len(original_query) > 10):   # Only regenerate for substantial queries
             
             state["iteration_count"] = iteration_count + 1
             print(f"Regenerating response (attempt {iteration_count + 1}) due to low helpfulness score: {helpfulness_score}")
             return "regenerate"
         
+        print(f"Finishing - Score: {helpfulness_score}, Query: '{original_query[:30]}...', Iterations: {iteration_count}")
         return "finish"
     
     def process_query(self, query: str, session_id: Optional[str] = None) -> Dict[str, Any]:
