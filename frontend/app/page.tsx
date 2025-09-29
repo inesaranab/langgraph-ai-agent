@@ -24,6 +24,17 @@ export default function Home() {
     // Generate session ID
     setSessionId(Math.random().toString(36).substring(7))
     
+    // Load API keys from localStorage
+    const savedOpenaiKey = localStorage.getItem('openai_api_key') || ''
+    const savedTavilyKey = localStorage.getItem('tavily_api_key') || ''
+    
+    if (savedOpenaiKey || savedTavilyKey) {
+      const keys = { openai: savedOpenaiKey, tavily: savedTavilyKey }
+      setApiKeys(keys)
+      setHasValidApiKeys(savedOpenaiKey.trim() !== '' && savedTavilyKey.trim() !== '')
+      chatService.current.setApiKeys(savedOpenaiKey, savedTavilyKey)
+    }
+    
     // Check backend connection
     checkConnection()
   }, [])
