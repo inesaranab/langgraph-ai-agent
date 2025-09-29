@@ -31,8 +31,8 @@ export default function Home() {
   const checkConnection = async () => {
     try {
       const health = await chatService.current.healthCheck()
-      // Connection is successful if health check passes
-      setIsConnected(health.status === 'healthy')
+      // Connection is successful if health check passes (supports both v1 and v2)
+      setIsConnected(health.status === 'healthy' || health.status === 'healthy-v2')
     } catch (error) {
       setIsConnected(false)
     }

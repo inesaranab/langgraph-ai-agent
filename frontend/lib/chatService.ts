@@ -50,22 +50,15 @@ export class ChatService {
   private tavilyApiKey: string = ''
 
   constructor() {
-    // Debug logging
+    // Configure for production deployment
     const isDevelopment = process.env.NODE_ENV === 'development'
-    console.log('🔧 ChatService Debug Info:')
-    console.log('NODE_ENV:', process.env.NODE_ENV)
-    console.log('isDevelopment:', isDevelopment)
-    console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL)
-    console.log('NEXT_PUBLIC_RAILWAY_URL:', process.env.NEXT_PUBLIC_RAILWAY_URL)
     
     if (isDevelopment) {
       // Local development
       this.baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
-      console.log('🏠 Using LOCAL backend:', this.baseUrl)
     } else {
       // Production: Vercel frontend + Railway backend
       this.baseUrl = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://langgraph-ai-agent-production-561e.up.railway.app'
-      console.log('🚀 Using PRODUCTION backend:', this.baseUrl)
     }
   }
 
@@ -75,7 +68,6 @@ export class ChatService {
   }
 
   async healthCheck(): Promise<HealthResponse> {
-    console.log('🔍 Health check attempting to connect to:', this.baseUrl + '/health')
     try {
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
@@ -85,18 +77,12 @@ export class ChatService {
         },
       })
       
-      console.log('📡 Health check response status:', response.status)
-      console.log('📡 Health check response headers:', Object.fromEntries(response.headers.entries()))
-      
       if (!response.ok) {
         throw new Error(`Health check failed: ${response.status} ${response.statusText}`)
       }
       
-      const data = await response.json()
-      console.log('✅ Health check success:', data)
-      return data
+      return response.json()
     } catch (error) {
-      console.error('❌ Health check error:', error)
       throw new Error(`Backend connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
