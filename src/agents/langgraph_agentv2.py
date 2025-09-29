@@ -4,6 +4,7 @@ Simplified agent logic with tool integration and state management
 """
 
 import time
+import json
 from typing import Dict, List, Any, Optional, TypedDict, Annotated
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
@@ -165,11 +166,31 @@ class LangGraphAgent:
             
             processing_time = time.time() - start_time
             
-            # Format sources for frontend
+            # Format sources for frontend - FIXED: Extract from ToolMessage content
             sources = []
-            search_results = final_state.get("search_results", [])
-            youtube_videos = final_state.get("youtube_videos", [])
-            print(f"DEBUG: Found {len(search_results)} search results and {len(youtube_videos)} YouTube videos")
+            search_results = []
+            youtube_videos = []
+            
+            # Extract search results from ToolMessage content in messages
+            messages = final_state.get("messages", [])
+            for message in messages:
+                if hasattr(message, 'content') and message.content and hasattr(message, 'type') and message.type == 'tool':
+                    try:
+                        content = str(message.content)
+                        # Try to parse JSON content from tool messages
+                        if content.startswith('[') and content.endswith(']'):
+                            tool_data = json.loads(content)
+                            if isinstance(tool_data, list):
+                                search_results.extend(tool_data)
+                        elif content.startswith('{') and content.endswith('}'):
+                            tool_data = json.loads(content)
+                            if isinstance(tool_data, dict):
+                                search_results.append(tool_data)
+                    except (json.JSONDecodeError, AttributeError):
+                        # If not JSON, skip this message
+                        continue
+            
+            print(f"DEBUG: Extracted {len(search_results)} search results from ToolMessages")
             
             # Add search results (web and arxiv)
             for result in search_results:
@@ -184,7 +205,8 @@ class LangGraphAgent:
                 }
                 sources.append(source)
             
-            # Add YouTube videos as sources
+            # Add YouTube videos as sources (from state - these may still work)
+            youtube_videos = final_state.get("youtube_videos", [])
             for video in youtube_videos:
                 print(f"DEBUG: Processing YouTube video: {video.get('title', 'No title')}")
                 source = {
