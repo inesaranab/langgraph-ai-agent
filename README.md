@@ -1,4 +1,4 @@
-﻿# LangGraph AI Agent
+﻿# Research AI Agent
 
 An intelligent multi-tool AI agent built with LangGraph that searches web, academic papers, and educational videos to provide comprehensive, cited responses.
 
